@@ -1,0 +1,40 @@
+# ── Secretos / entorno ───────────────────────────────
+.env
+.env.*
+!.env.example
+*.env
+
+# ── Python ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+
+# ── Node / Frontend ──────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# ── Logs ─────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Editores / SO ────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ── Build / temporales ───────────────────────────────
+*.tmp
+build/
+coverage/

@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Aplicar fondo base en ambos modos directamente en html/body */
+@layer base {
+  html, body, #root {
+    @apply h-full;
+  }
+  html {
+    @apply bg-white dark:bg-slate-900;
+  }
+  body {
+    @apply antialiased bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100;
+    transition: background-color 0.2s, color 0.2s;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors
+           focus:outline-none focus:ring-2 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500;
+  }
+  .btn-secondary {
+    @apply btn
+           bg-white dark:bg-slate-700
+           text-gray-700 dark:text-slate-200
+           border border-gray-300 dark:border-slate-600
+           hover:bg-gray-50 dark:hover:bg-slate-600
+           focus:ring-brand-500;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white dark:bg-slate-800
+           border border-gray-200 dark:border-slate-700
+           rounded-xl shadow-sm p-5 transition-colors;
+  }
+
+  /* Input / Select */
+  .input {
+    @apply block w-full rounded-lg border px-3 py-2 text-sm shadow-sm outline-none transition;
+    @apply bg-white dark:bg-slate-700;
+    @apply border-gray-300 dark:border-slate-600;
+    @apply text-gray-900 dark:text-slate-100;
+    @apply placeholder-gray-400 dark:placeholder-slate-500;
+    @apply focus:border-brand-500 focus:ring-1 focus:ring-brand-500;
+  }
+
+  /* Label */
+  .label {
+    @apply block text-sm font-medium mb-1 text-gray-600 dark:text-slate-400;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  /* Tabla */
+  .tbl-header {
+    @apply text-left text-xs font-semibold uppercase tracking-wider py-3 px-4
+           text-gray-500 dark:text-slate-400
+           bg-gray-50 dark:bg-slate-900
+           border-b border-gray-200 dark:border-slate-700;
+  }
+  .tbl-row {
+    @apply border-b border-gray-100 dark:border-slate-700/60
+           hover:bg-gray-50 dark:hover:bg-slate-700/30
+           transition-colors;
+  }
+  .tbl-cell {
+    @apply py-3 px-4 text-sm text-gray-800 dark:text-slate-200;
+  }
+}
