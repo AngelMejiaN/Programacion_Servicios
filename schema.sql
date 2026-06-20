@@ -107,12 +107,15 @@ GO
 -- 7. PG_USUARIO
 -- ============================================================
 CREATE TABLE PG_USUARIO (
-    usuario_id  INT          IDENTITY(1,1) PRIMARY KEY,
-    nombre      VARCHAR(100) NOT NULL,
-    telegram_id BIGINT       NULL,
-    rol         VARCHAR(20)  NOT NULL CHECK (rol IN ('administrador','programador','supervisor')),
-    sede_id     INT          NULL REFERENCES PG_SEDE(sede_id),
-    activo      BIT          NOT NULL DEFAULT 1
+    usuario_id    INT          IDENTITY(1,1) PRIMARY KEY,
+    nombre        VARCHAR(100) NOT NULL,
+    email         VARCHAR(150) NULL UNIQUE,
+    password_hash VARCHAR(255) NULL,           -- NULL para usuarios solo-bot
+    telegram_id   BIGINT       NULL,
+    emp_id        INT          NULL,           -- vincula con T_EMPLEADOS para notificaciones bot
+    rol           VARCHAR(20)  NOT NULL CHECK (rol IN ('administrador','programador','supervisor','conductor')),
+    sede_id       INT          NULL REFERENCES PG_SEDE(sede_id),
+    activo        BIT          NOT NULL DEFAULT 1
 );
 GO
 
@@ -772,6 +775,42 @@ VALUES (
     'administrador',
     1,
     1
+);
+GO
+
+-- ============================================================
+-- 9. PG_SEDE_LOCAL  (Fix: reemplaza locales VARCHAR csv en PG_SEDE)
+-- ============================================================
+-- Permite JOIN limpio con T_EMPLEADOS:
+--   INNER JOIN PG_SEDE_LOCAL sl ON sl.local_id = e.emp_local_id AND sl.sede_id = :id
+-- ============================================================
+CREATE TABLE PG_SEDE_LOCAL (
+    id       INT IDENTITY(1,1) PRIMARY KEY,
+    sede_id  INT NOT NULL REFERENCES PG_SEDE(sede_id),
+    local_id INT NOT NULL,
+    CONSTRAINT uq_sede_local UNIQUE (sede_id, local_id)
+);
+GO
+
+-- Migrar datos existentes desde PG_SEDE.locales (CSV) a PG_SEDE_LOCAL
+INSERT INTO PG_SEDE_LOCAL (sede_id, local_id)
+SELECT sede_id, CAST(TRIM(value) AS INT)
+FROM   PG_SEDE
+CROSS APPLY STRING_SPLIT(ISNULL(locales, ''), ',')
+WHERE  TRIM(value) <> '';
+GO
+
+-- ============================================================
+-- 10. PG_CONDUCTOR_DEMO  (solo para demo/desarrollo sin T_EMPLEADOS)
+-- ============================================================
+CREATE TABLE PG_CONDUCTOR_DEMO (
+    emp_id           INT          PRIMARY KEY,
+    nombre_completo  VARCHAR(150) NOT NULL,
+    emp_licencia     VARCHAR(20)  NULL,
+    emp_licencia_cat VARCHAR(10)  NULL,
+    emp_telefono     VARCHAR(20)  NULL,
+    sede_id          INT          NOT NULL REFERENCES PG_SEDE(sede_id),
+    activo           BIT          NOT NULL DEFAULT 1
 );
 GO
 

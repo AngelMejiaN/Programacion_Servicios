@@ -2,6 +2,9 @@
 TransitPro — API principal
 ==========================
 Arranca con:  uvicorn backend.main:app --reload
+
+Demo sin SQL Server:
+  DEMO_MODE=true uvicorn backend.main:app --reload
 """
 
 from fastapi import FastAPI
@@ -10,12 +13,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine, Base
 
-# Importar todos los modelos para que SQLAlchemy los registre antes de
-# cualquier operación con la base de datos (aunque el schema se crea
-# con el script SQL, esto garantiza que las relaciones ORM estén listas).
-from .models import (  # noqa: F401
+from .models import (  # noqa: F401  — registra todos los modelos en Base
     sede, cliente, vehiculo, paradero,
     ruta, ruta_paradero, usuario, servicio,
+    sede_local, conductor_demo,
 )
 
 from .routers import (
@@ -40,11 +41,12 @@ app = FastAPI(
 )
 
 # ─────────────────────────────────────────────
-# CORS — ajustar origins en producción
+# CORS — lista de orígenes desde variable de entorno
 # ─────────────────────────────────────────────
+_origins = settings.cors_origins_list
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # En prod: lista de dominios permitidos
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,6 +67,22 @@ app.include_router(servicios.router)
 
 
 # ─────────────────────────────────────────────
+# Startup — solo en modo demo
+# ─────────────────────────────────────────────
+@app.on_event("startup")
+def _startup():
+    if settings.demo_mode:
+        Base.metadata.create_all(bind=engine)
+        from .demo_seed import seed
+        from .database import SessionLocal
+        db = SessionLocal()
+        try:
+            seed(db)
+        finally:
+            db.close()
+
+
+# ─────────────────────────────────────────────
 # Health check
 # ─────────────────────────────────────────────
 @app.get("/", tags=["Health"])
@@ -73,4 +91,5 @@ def health_check():
         "status": "ok",
         "app": "TransitPro API",
         "version": "1.0.0",
+        "demo_mode": settings.demo_mode,
     }

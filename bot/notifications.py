@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date, timedelta
+from collections import defaultdict
 
 from sqlalchemy.orm import joinedload
 from telegram.ext import Application
@@ -29,8 +30,8 @@ logger = logging.getLogger(__name__)
 async def notificar_conductores(context):
     """
     Se ejecuta cada día a las 20:00 (hora Lima).
-    Busca todos los servicios del día siguiente y envía un mensaje
-    a cada conductor con sus asignaciones.
+    Busca los servicios del día siguiente y notifica a cada conductor
+    que tenga telegram_id registrado en PG_USUARIO con emp_id coincidente.
     """
     manana = date.today() + timedelta(days=1)
     app: Application = context.application
@@ -53,47 +54,36 @@ async def notificar_conductores(context):
             logger.info("Notificación conductores: sin servicios para %s", manana)
             return
 
-        # Agrupar por conductor (conductor_id es emp_id de T_EMPLEADOS)
-        por_conductor: dict[int, list[Servicio]] = {}
+        # Agrupar servicios por emp_id (conductor_id y conductor2_id)
+        por_emp: dict[int, list[Servicio]] = defaultdict(list)
         for s in servicios:
-            por_conductor.setdefault(s.conductor_id, []).append(s)
+            por_emp[s.conductor_id].append(s)
             if s.conductor2_id:
-                por_conductor.setdefault(s.conductor2_id, []).append(s)
+                por_emp[s.conductor2_id].append(s)
 
-        # Buscar usuarios registrados con ese emp_id
-        # Nota: PG_USUARIO no guarda emp_id directamente.
-        # Para la notificación buscamos por sede y rol=conductor.
-        # Una mejora futura sería agregar emp_id a PG_USUARIO.
-        usuarios_conductor = (
+        # Buscar usuarios con rol=conductor que tengan emp_id y telegram_id
+        conductores_bot = (
             db.query(Usuario)
             .filter(
-                Usuario.rol.in_(["conductor"]),
+                Usuario.rol == "conductor",
                 Usuario.activo == True,
+                Usuario.emp_id.isnot(None),
                 Usuario.telegram_id.isnot(None),
             )
             .all()
         )
 
-    for usuario in usuarios_conductor:
-        # Enviar todos los servicios del día siguiente al conductor
-        # (filtrando por los que le corresponden si hay emp_id)
-        lineas = [f"🌙 *Tus servicios para mañana {manana.strftime('%d/%m/%Y')}:*\n"]
-        encontrado = False
-
-        for emp_id, ss in por_conductor.items():
-            # Si el usuario tiene emp_id configurado en user_data, comparar
-            # Por ahora enviamos a todos los conductores su sede
-            for s in ss:
-                if s.sede_id == usuario.sede_id:
-                    hora  = s.hora_inicio.strftime("%H:%M") if s.hora_inicio else "--:--"
-                    ruta  = s.ruta.nombre[:40] if s.ruta else f"Ruta #{s.ruta_id}"
-                    placa = s.vehiculo.placa if s.vehiculo else f"#{s.vehiculo_id}"
-                    lineas.append(f"🕐 {hora} — {ruta}\n🚌 Vehículo: {placa}\n")
-                    encontrado = True
-
-        if not encontrado:
+    for usuario in conductores_bot:
+        mis_servicios = por_emp.get(usuario.emp_id, [])
+        if not mis_servicios:
             continue
 
+        lineas = [f"🌙 *Tus servicios para mañana {manana.strftime('%d/%m/%Y')}:*\n"]
+        for s in mis_servicios:
+            hora  = s.hora_inicio.strftime("%H:%M") if s.hora_inicio else "--:--"
+            ruta  = s.ruta.nombre[:40] if s.ruta else f"Ruta #{s.ruta_id}"
+            placa = s.vehiculo.placa if s.vehiculo else f"#{s.vehiculo_id}"
+            lineas.append(f"🕐 {hora} — {ruta}\n🚌 Vehículo: {placa}\n")
         lineas.append("✅ Recuerda llegar puntual. ¡Buenas noches!")
 
         try:
@@ -102,12 +92,11 @@ async def notificar_conductores(context):
                 text="\n".join(lineas),
                 parse_mode="Markdown",
             )
-            logger.info("Notificación enviada al conductor telegram_id=%s", usuario.telegram_id)
+            logger.info("Notificación enviada al conductor emp_id=%s telegram_id=%s",
+                        usuario.emp_id, usuario.telegram_id)
         except Exception as e:
-            logger.warning(
-                "No se pudo enviar notificación al conductor %s: %s",
-                usuario.telegram_id, e
-            )
+            logger.warning("No se pudo notificar conductor emp_id=%s: %s",
+                           usuario.emp_id, e)
 
 
 # ─────────────────────────────────────────────
@@ -122,7 +111,6 @@ async def alertar_programadores(context):
     app: Application = context.application
 
     with get_session() as db:
-        # Servicios sin conductor (conductor_id = 0 o nulo)
         sin_conductor = (
             db.query(Servicio)
             .options(joinedload(Servicio.ruta))
@@ -161,7 +149,6 @@ async def alertar_programadores(context):
             hora = s.hora_inicio.strftime("%H:%M") if s.hora_inicio else "--:--"
             ruta = s.ruta.nombre[:40] if s.ruta else f"Ruta #{s.ruta_id}"
             lineas.append(f"🕐 {hora} — {ruta} (ID: {s.servicio_id})")
-
         lineas.append("\nUsa /nuevo para asignar un conductor.")
 
         try:
@@ -172,46 +159,26 @@ async def alertar_programadores(context):
             )
             logger.info("Alerta enviada al programador telegram_id=%s", prog.telegram_id)
         except Exception as e:
-            logger.warning(
-                "No se pudo enviar alerta al programador %s: %s",
-                prog.telegram_id, e
-            )
+            logger.warning("No se pudo alertar programador %s: %s", prog.telegram_id, e)
 
 
 # ─────────────────────────────────────────────
-# Registro de jobs en la aplicación
+# Registro de jobs
 # ─────────────────────────────────────────────
 def register_jobs(app: Application):
-    """
-    Registra los dos jobs diarios usando el JobQueue de python-telegram-bot.
-    Los horarios usan la zona horaria configurada en settings (America/Lima).
-    """
     import datetime
     import pytz
 
     tz = pytz.timezone(settings.timezone)
 
-    # Notificación conductores — 20:00 Lima
-    hora_conductores = datetime.time(
-        hour=settings.hora_notif_conductores,
-        minute=0,
-        tzinfo=tz,
-    )
     app.job_queue.run_daily(
         notificar_conductores,
-        time=hora_conductores,
+        time=datetime.time(hour=settings.hora_notif_conductores, minute=0, tzinfo=tz),
         name="notif_conductores",
-    )
-
-    # Alerta programadores — 07:00 Lima
-    hora_programadores = datetime.time(
-        hour=settings.hora_notif_programador,
-        minute=0,
-        tzinfo=tz,
     )
     app.job_queue.run_daily(
         alertar_programadores,
-        time=hora_programadores,
+        time=datetime.time(hour=settings.hora_notif_programador, minute=0, tzinfo=tz),
         name="alerta_programadores",
     )
 

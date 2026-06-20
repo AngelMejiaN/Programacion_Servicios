@@ -192,7 +192,7 @@ def cambiar_estado(
     if data.estado not in transiciones.get(s.estado, []):
         raise HTTPException(
             status_code=400,
-            detail=f"No se puede cambiar de '{s.estado}' a '{data.estado}'",
+            detail=f"No se puede cambiar de '{s.estado}' a '{data.estado.value}'",
         )
     s.estado = data.estado
     if data.observaciones:

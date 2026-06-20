@@ -416,13 +416,20 @@ def importar_desde_excel(archivo: BinaryIO, sede_id: int, usuario_id: int, db: S
     resultados = []
     creados = errores = 0
 
-    # Detectar fila de inicio de datos (puede ser fila 4 o 5 según versión plantilla)
-    fila_inicio = 4
-    for test_row in (4, 5):
-        first_vals = list(hoja.iter_rows(min_row=test_row, max_row=test_row, values_only=True))
-        if first_vals and any(v is not None for v in first_vals[0]):
-            break
-        fila_inicio = test_row + 1
+    # Detectar la primera fila donde la columna A contiene una fecha válida.
+    # Este enfoque es robusto ante cualquier versión de la plantilla
+    # (número de filas de encabezado variable, títulos, instrucciones, etc.).
+    fila_inicio = next(
+        (
+            row_num
+            for row_num in range(1, 20)
+            if _parsear_fecha(str(hoja.cell(row=row_num, column=1).value or ""))
+        ),
+        None,
+    )
+    if fila_inicio is None:
+        return {"ok": False, "error": "No se encontraron filas con fecha en la columna A. "
+                "Verifica que el archivo sea la plantilla oficial."}
 
     for fila_num, fila in enumerate(hoja.iter_rows(min_row=fila_inicio, values_only=True), start=fila_inicio):
         if all(v is None or str(v).strip() == "" for v in fila):
