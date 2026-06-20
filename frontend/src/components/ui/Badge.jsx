@@ -25,7 +25,7 @@ export function EstadoBadge({ estado }) {
 export function RolBadge({ rol }) {
   const styles = {
     administrador: 'bg-purple-100 text-purple-800',
-    programador:   'bg-brand-100  text-brand-800',
+    programador:   'bg-blue-100   text-blue-800',
     supervisor:    'bg-orange-100 text-orange-700',
     conductor:     'bg-gray-100   text-gray-700',
   }

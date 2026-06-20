@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import {
-  Bus, LayoutDashboard, Calendar, ClipboardList,
+  Menu, LayoutDashboard, Calendar, ClipboardList,
   Truck, Route, Users, LogOut, ChevronRight, Sun, Moon,
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -31,16 +31,32 @@ export default function Sidebar({ collapsed, onToggle }) {
       'bg-brand-900 text-white',
       collapsed ? 'w-16' : 'w-56'
     )}>
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
-        <div className="bg-brand-600 rounded-lg p-1.5 shrink-0">
-          <Bus size={18} />
+      {/* Header */}
+      {collapsed ? (
+        <div className="flex items-center justify-center px-2 py-4 border-b border-white/10">
+          <button
+            onClick={onToggle}
+            title="Expandir menú"
+            className="text-white/60 hover:text-white transition-colors"
+          >
+            <Menu size={20} />
+          </button>
         </div>
-        {!collapsed && <span className="font-bold tracking-tight">TransitPro</span>}
-        <button onClick={onToggle} className="ml-auto text-white/40 hover:text-white transition-colors">
-          <ChevronRight size={15} className={clsx('transition-transform', collapsed ? '' : 'rotate-180')} />
-        </button>
-      </div>
+      ) : (
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-white/40 uppercase tracking-widest font-semibold leading-none mb-0.5">Rol</p>
+            <p className="text-sm font-bold text-white capitalize truncate">{user?.rol}</p>
+          </div>
+          <button
+            onClick={onToggle}
+            title="Colapsar menú"
+            className="text-white/40 hover:text-white transition-colors shrink-0"
+          >
+            <ChevronRight size={15} className="rotate-180" />
+          </button>
+        </div>
+      )}
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">

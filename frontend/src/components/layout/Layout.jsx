@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { Bus } from 'lucide-react'
 import Sidebar from './Sidebar'
 
 const PAGE_TITLES = {
@@ -26,14 +27,11 @@ export default function Layout() {
         {/* Topbar */}
         <header className="flex items-center justify-between px-6 py-3 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shrink-0 shadow-sm">
           <h1 className="text-base font-semibold text-gray-800 dark:text-slate-100">{titulo}</h1>
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
-              {user?.nombre?.[0]?.toUpperCase()}
+          <div className="flex items-center gap-2">
+            <div className="bg-brand-600 text-white rounded-lg p-1.5 shrink-0">
+              <Bus size={18} />
             </div>
-            <div className="text-sm">
-              <span className="font-medium text-gray-800 dark:text-slate-100">{user?.nombre}</span>
-              <span className="text-gray-400 dark:text-slate-500 capitalize text-xs ml-1">· {user?.rol}</span>
-            </div>
+            <span className="font-bold text-brand-700 dark:text-brand-100 tracking-tight">TransitPro</span>
           </div>
         </header>
 
