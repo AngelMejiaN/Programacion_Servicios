@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.cliente import Cliente
 from ..schemas.cliente import ClienteResponse, ClienteCreate
+from ..dependencies import get_usuario_activo
 
-router = APIRouter(prefix="/clientes", tags=["Clientes"])
+router = APIRouter(prefix="/clientes", tags=["Clientes"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 @router.get("/", response_model=list[ClienteResponse])

@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..schemas.conductor import ConductorResponse
 from ..services.conductores import get_conductores_by_sede, get_conductor_by_id
+from ..dependencies import get_usuario_activo
 
-router = APIRouter(prefix="/conductores", tags=["Conductores"])
+router = APIRouter(prefix="/conductores", tags=["Conductores"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 @router.get("/", response_model=list[ConductorResponse])

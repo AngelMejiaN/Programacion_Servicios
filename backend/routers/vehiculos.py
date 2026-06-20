@@ -4,8 +4,10 @@ from typing import Optional
 from ..database import get_db
 from ..models.vehiculo import Vehiculo
 from ..schemas.vehiculo import VehiculoResponse, VehiculoCreate
+from ..dependencies import get_usuario_activo
 
-router = APIRouter(prefix="/vehiculos", tags=["Vehículos"])
+router = APIRouter(prefix="/vehiculos", tags=["Vehículos"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 @router.get("/", response_model=list[VehiculoResponse])

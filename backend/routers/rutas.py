@@ -7,8 +7,10 @@ from ..models.ruta_paradero import RutaParadero
 from ..models.paradero import Paradero
 from ..schemas.ruta import RutaResponse, RutaResumen
 from ..schemas.paradero import ParaderoResponse
+from ..dependencies import get_usuario_activo
 
-router = APIRouter(prefix="/rutas", tags=["Rutas"])
+router = APIRouter(prefix="/rutas", tags=["Rutas"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 @router.get("/", response_model=list[RutaResumen])

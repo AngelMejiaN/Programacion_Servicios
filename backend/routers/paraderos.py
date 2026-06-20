@@ -4,8 +4,10 @@ from typing import Optional
 from ..database import get_db
 from ..models.paradero import Paradero
 from ..schemas.paradero import ParaderoResponse, ParaderoCreate
+from ..dependencies import get_usuario_activo
 
-router = APIRouter(prefix="/paraderos", tags=["Paraderos"])
+router = APIRouter(prefix="/paraderos", tags=["Paraderos"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 @router.get("/", response_model=list[ParaderoResponse])

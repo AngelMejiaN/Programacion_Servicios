@@ -18,7 +18,8 @@ from ..models.usuario import Usuario
 from ..services.programacion import validar_y_enriquecer, calcular_hora_retorno
 from ..services.importacion import generar_plantilla, importar_desde_excel
 
-router = APIRouter(prefix="/servicios", tags=["Servicios"])
+router = APIRouter(prefix="/servicios", tags=["Servicios"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 # ─────────────────────────────────────────────

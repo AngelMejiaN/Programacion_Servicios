@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.sede import Sede
 from ..schemas.sede import SedeResponse, SedeCreate, SedeUpdate
-from ..dependencies import require_rol
+from ..dependencies import get_usuario_activo, require_rol
 
-router = APIRouter(prefix="/sedes", tags=["Sedes"])
+router = APIRouter(prefix="/sedes", tags=["Sedes"],
+                   dependencies=[Depends(get_usuario_activo)])
 
 
 @router.get("/", response_model=list[SedeResponse])
