@@ -42,28 +42,28 @@ function DayColumn({ sedeId, fecha, dia }) {
 
   return (
     <div className={clsx(
-      'flex flex-col border-r border-gray-200 last:border-r-0',
-      hoy && 'bg-brand-50'
+      'flex flex-col border-r border-gray-200 dark:border-slate-700 last:border-r-0',
+      hoy ? 'bg-brand-50 dark:bg-blue-900/20' : 'dark:bg-slate-800'
     )}>
       {/* Header del día */}
       <div className={clsx(
-        'px-2 py-3 text-center border-b border-gray-200',
+        'px-2 py-3 text-center border-b border-gray-200 dark:border-slate-700',
         hoy && 'bg-brand-600 text-white'
       )}>
-        <p className={clsx('text-xs font-semibold uppercase tracking-wider', hoy ? 'text-brand-100' : 'text-gray-500')}>
+        <p className={clsx('text-xs font-semibold uppercase tracking-wider', hoy ? 'text-brand-100' : 'text-gray-500 dark:text-slate-400')}>
           {format(fecha, 'EEE', { locale: es })}
         </p>
-        <p className={clsx('text-xl font-bold mt-0.5', hoy ? 'text-white' : 'text-gray-900')}>
+        <p className={clsx('text-xl font-bold mt-0.5', hoy ? 'text-white' : 'text-gray-900 dark:text-slate-100')}>
           {format(fecha, 'd')}
         </p>
-        <p className={clsx('text-xs mt-0.5', hoy ? 'text-brand-100' : 'text-gray-400')}>
+        <p className={clsx('text-xs mt-0.5', hoy ? 'text-brand-100' : 'text-gray-400 dark:text-slate-500')}>
           {servicios.length} serv.
         </p>
       </div>
 
       {/* Pastillas de resumen */}
       {servicios.length > 0 && (
-        <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100">
+        <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 dark:border-slate-700/50">
           {prog      > 0 && <span className="badge bg-yellow-100 text-yellow-800">{prog}  prog.</span>}
           {en_curso  > 0 && <span className="badge bg-green-100  text-green-800">{en_curso} curso</span>}
           {completado> 0 && <span className="badge bg-blue-100   text-blue-800">{completado} ok</span>}
@@ -74,25 +74,25 @@ function DayColumn({ sedeId, fecha, dia }) {
       {/* Lista de servicios */}
       <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
         {isLoading && (
-          <p className="text-xs text-gray-400 text-center py-4">Cargando...</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500 text-center py-4">Cargando...</p>
         )}
         {!isLoading && servicios.length === 0 && (
-          <p className="text-xs text-gray-300 text-center py-4">—</p>
+          <p className="text-xs text-gray-300 dark:text-slate-600 text-center py-4">—</p>
         )}
         {servicios.map((s) => {
           const hora = s.hora_inicio?.slice(0, 5) ?? '--:--'
           const ruta = s.ruta_nombre ?? `Ruta ${s.ruta_id}`
           const colorBg = {
-            PROGRAMADO: 'bg-yellow-50  border-yellow-200',
-            EN_CURSO:   'bg-green-50   border-green-200',
-            COMPLETADO: 'bg-blue-50    border-blue-200',
-            CANCELADO:  'bg-gray-50    border-gray-200 opacity-50',
-          }[s.estado] ?? 'bg-white border-gray-200'
+            PROGRAMADO: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700/50',
+            EN_CURSO:   'bg-green-50  dark:bg-green-900/20  border-green-200  dark:border-green-700/50',
+            COMPLETADO: 'bg-blue-50   dark:bg-blue-900/20   border-blue-200   dark:border-blue-700/50',
+            CANCELADO:  'bg-gray-50   dark:bg-slate-700/30  border-gray-200   dark:border-slate-600/50 opacity-50',
+          }[s.estado] ?? 'bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600'
 
           return (
             <div key={s.servicio_id} className={clsx('rounded-md border p-1.5 text-xs', colorBg)}>
-              <p className="font-semibold text-gray-900">{hora}</p>
-              <p className="text-gray-600 truncate mt-0.5" title={ruta}>{ruta}</p>
+              <p className="font-semibold text-gray-900 dark:text-slate-100">{hora}</p>
+              <p className="text-gray-600 dark:text-slate-300 truncate mt-0.5" title={ruta}>{ruta}</p>
             </div>
           )
         })}
@@ -113,8 +113,8 @@ export default function Calendario() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Calendario semanal</h1>
-          <p className="text-sm text-gray-500 capitalize mt-0.5">{semanaLabel}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Calendario semanal</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 capitalize mt-0.5">{semanaLabel}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setSemana(s => subWeeks(s, 1))} className="btn-secondary px-2">
