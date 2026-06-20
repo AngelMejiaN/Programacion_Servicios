@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useAuth } from '../context/AuthContext'
 import { getServicios, crearServicio, cambiarEstado, descargarPlantilla, importarServicios } from '../api/servicios'
-import { getRutas } from '../api/rutas'
+import { getRutas, getRuta } from '../api/rutas'
 import { getVehiculos } from '../api/vehiculos'
 import { getConductores } from '../api/conductores'
 import { getClientes } from '../api/clientes'
@@ -67,6 +67,13 @@ function FormServicio({ onClose }) {
     enabled: !!sedeId,
   })
 
+  const rutaSelecBase = rutas.find(r => String(r.ruta_id) === rutaId)
+  const { data: rutaDetalle } = useQuery({
+    queryKey: ['ruta', rutaId],
+    queryFn: () => getRuta(Number(rutaId)),
+    enabled: !!rutaId && !!rutaSelecBase && !rutaSelecBase.origen_fijo,
+  })
+
   const { data: vehiculos = [], isFetching: loadingVehiculos } = useQuery({
     queryKey: ['vehiculos', sedeId],
     queryFn: () => getVehiculos({ sede_id: Number(sedeId), operativo: true }),
@@ -88,7 +95,7 @@ function FormServicio({ onClose }) {
   // ── Datos derivados ──────────────────────────────────────────────────────
   const sede        = sedes.find(s => String(s.sede_id) === sedeId)
   const tipoSede    = sede?.tipo ?? 'A'
-  const rutaSelec   = rutas.find(r => String(r.ruta_id) === rutaId)
+  const rutaSelec   = rutaDetalle ?? rutaSelecBase
   const requiereDos = rutaSelec?.requiere_dos_conductores
   const tiempoEst   = rutaSelec?.tiempo_estimado_min
 
