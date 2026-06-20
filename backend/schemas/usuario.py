@@ -7,6 +7,7 @@ class Rol(str, Enum):
     administrador = "administrador"
     programador   = "programador"
     supervisor    = "supervisor"
+    conductor     = "conductor"
 
 
 class UsuarioBase(BaseModel):
