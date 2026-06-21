@@ -66,6 +66,11 @@ _HORAS_PM = [time(h, m) for h in range(13, 19) for m in (0, 15, 30, 45)]
 _DIA_ANCLA = 21  # "hoy" dentro del mes de Junio 2026
 
 
+def _add_minutes(t: time, minutes: int) -> time:
+    total = t.hour * 60 + t.minute + minutes
+    return time(total // 60 % 24, total % 60)
+
+
 def _estado_junio(day: int) -> str:
     if day < _DIA_ANCLA:
         return random.choices(["COMPLETADO", "CANCELADO"], weights=[75, 25])[0]
@@ -331,9 +336,10 @@ def seed(db: Session) -> None:
 
     # ── Servicios masivos — Junio 2026 (stress test) ──────────────────────────
     # 300 turno AM + 120 turno PM = 420 servicios/día × 30 días = 12 600 servicios
-    veh_ids  = [v.vehiculo_id for v in veh_lima]  # 300 IDs de vehículos Lima
-    ruta_ids = [r.ruta_id for r in rutas_lima]    # 15 IDs de rutas Lima
-    cid_pool = list(cond_lima_ids)                  # 300 IDs de conductores Lima
+    veh_ids      = [v.vehiculo_id for v in veh_lima]  # 300 IDs de vehículos Lima
+    ruta_ids     = [r.ruta_id for r in rutas_lima]    # 15 IDs de rutas Lima
+    cid_pool     = list(cond_lima_ids)                 # 300 IDs de conductores Lima
+    ruta_tiempo  = {r.ruta_id: r.tiempo_estimado_min for r in rutas_lima}
 
     servicios_junio: list[Servicio] = []
 
@@ -345,30 +351,52 @@ def seed(db: Session) -> None:
         r_cond = list(cid_pool); random.shuffle(r_cond)
 
         for idx, (vid, cid) in enumerate(zip(r_veh, r_cond)):
+            rid    = ruta_ids[idx % len(ruta_ids)]
+            hora   = random.choice(_HORAS_AM)
+            estado = _estado_junio(day)
+            tiempo = ruta_tiempo.get(rid)
+            hora_est  = _add_minutes(hora, tiempo) if tiempo else None
+            hora_real = None
+            if estado == 'COMPLETADO' and hora_est:
+                delta = random.randint(-10, 0) if random.random() < 0.92 else random.randint(5, 30)
+                hora_real = _add_minutes(hora_est, delta)
             servicios_junio.append(Servicio(
-                fecha       = fecha,
-                ruta_id     = ruta_ids[idx % len(ruta_ids)],
-                sede_id     = lima.sede_id,
-                vehiculo_id = vid,
-                conductor_id= cid,
-                hora_inicio = random.choice(_HORAS_AM),
-                estado      = _estado_junio(day),
-                creado_por  = admin.usuario_id,
+                fecha             = fecha,
+                ruta_id           = rid,
+                sede_id           = lima.sede_id,
+                vehiculo_id       = vid,
+                conductor_id      = cid,
+                hora_inicio       = hora,
+                hora_llegada_est  = hora_est,
+                hora_llegada_real = hora_real,
+                estado            = estado,
+                creado_por        = admin.usuario_id,
             ))
 
         # Turno PM — 40 % de la flota con segundo servicio (120 servicios)
         pm_veh  = random.sample(veh_ids,  120)
         pm_cond = random.sample(cid_pool, 120)
         for vid, cid in zip(pm_veh, pm_cond):
+            rid    = random.choice(ruta_ids)
+            hora   = random.choice(_HORAS_PM)
+            estado = _estado_junio(day)
+            tiempo = ruta_tiempo.get(rid)
+            hora_est  = _add_minutes(hora, tiempo) if tiempo else None
+            hora_real = None
+            if estado == 'COMPLETADO' and hora_est:
+                delta = random.randint(-10, 0) if random.random() < 0.92 else random.randint(5, 30)
+                hora_real = _add_minutes(hora_est, delta)
             servicios_junio.append(Servicio(
-                fecha       = fecha,
-                ruta_id     = random.choice(ruta_ids),
-                sede_id     = lima.sede_id,
-                vehiculo_id = vid,
-                conductor_id= cid,
-                hora_inicio = random.choice(_HORAS_PM),
-                estado      = _estado_junio(day),
-                creado_por  = admin.usuario_id,
+                fecha             = fecha,
+                ruta_id           = rid,
+                sede_id           = lima.sede_id,
+                vehiculo_id       = vid,
+                conductor_id      = cid,
+                hora_inicio       = hora,
+                hora_llegada_est  = hora_est,
+                hora_llegada_real = hora_real,
+                estado            = estado,
+                creado_por        = admin.usuario_id,
             ))
 
     # Inserción en lotes de 1 000 para no saturar la sesión
