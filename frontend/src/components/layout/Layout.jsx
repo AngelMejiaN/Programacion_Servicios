@@ -8,9 +8,10 @@ const PAGE_TITLES = {
   '/':               'Dashboard',
   '/calendario':     'Calendario semanal',
   '/servicios':      'Gestión de servicios',
-  '/admin/vehiculos':'Vehículos',
-  '/admin/rutas':    'Rutas',
-  '/admin/usuarios': 'Usuarios',
+  '/admin/vehiculos':    'Vehículos',
+  '/admin/rutas':        'Rutas',
+  '/admin/conductores':  'Conductores',
+  '/admin/usuarios':     'Usuarios',
 }
 
 export default function Layout() {

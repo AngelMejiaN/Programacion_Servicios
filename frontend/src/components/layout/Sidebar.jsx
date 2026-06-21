@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import {
   Menu, LayoutDashboard, Calendar, ClipboardList,
-  Truck, Route, Users, LogOut, ChevronRight, Sun, Moon,
+  Truck, Route, Users, UserCheck, LogOut, ChevronRight, Sun, Moon,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -12,9 +12,10 @@ const NAV_ITEMS = [
   { to: '/calendario', label: 'Calendario',   icon: Calendar,        roles: ['administrador','programador','supervisor'] },
   { to: '/servicios',  label: 'Servicios',    icon: ClipboardList,   roles: ['administrador','programador'] },
   { divider: true, label: 'Administración', roles: ['administrador'] },
-  { to: '/admin/vehiculos', label: 'Vehículos', icon: Truck,  roles: ['administrador'] },
-  { to: '/admin/rutas',     label: 'Rutas',     icon: Route,  roles: ['administrador'] },
-  { to: '/admin/usuarios',  label: 'Usuarios',  icon: Users,  roles: ['administrador'] },
+  { to: '/admin/vehiculos',    label: 'Vehículos',   icon: Truck,      roles: ['administrador'] },
+  { to: '/admin/rutas',        label: 'Rutas',       icon: Route,      roles: ['administrador'] },
+  { to: '/admin/conductores',  label: 'Conductores', icon: UserCheck,  roles: ['administrador'] },
+  { to: '/admin/usuarios',     label: 'Usuarios',    icon: Users,      roles: ['administrador'] },
 ]
 
 export default function Sidebar({ collapsed, onToggle }) {

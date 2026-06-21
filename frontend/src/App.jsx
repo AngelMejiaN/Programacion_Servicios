@@ -9,6 +9,7 @@ import Servicios from './pages/Servicios'
 import Vehiculos from './pages/admin/Vehiculos'
 import Rutas from './pages/admin/Rutas'
 import Usuarios from './pages/admin/Usuarios'
+import Conductores from './pages/admin/Conductores'
 
 function ProtectedRoute({ children, adminOnly = false }) {
   const { user } = useAuth()
@@ -33,9 +34,10 @@ function AppRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="calendario" element={<Calendario />} />
         <Route path="servicios" element={<Servicios />} />
-        <Route path="admin/vehiculos" element={<ProtectedRoute adminOnly><Vehiculos /></ProtectedRoute>} />
-        <Route path="admin/rutas"     element={<ProtectedRoute adminOnly><Rutas /></ProtectedRoute>} />
-        <Route path="admin/usuarios"  element={<ProtectedRoute adminOnly><Usuarios /></ProtectedRoute>} />
+        <Route path="admin/vehiculos"   element={<ProtectedRoute adminOnly><Vehiculos /></ProtectedRoute>} />
+        <Route path="admin/rutas"      element={<ProtectedRoute adminOnly><Rutas /></ProtectedRoute>} />
+        <Route path="admin/usuarios"   element={<ProtectedRoute adminOnly><Usuarios /></ProtectedRoute>} />
+        <Route path="admin/conductores" element={<ProtectedRoute adminOnly><Conductores /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
