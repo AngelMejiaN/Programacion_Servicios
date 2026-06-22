@@ -4,6 +4,8 @@ Aplicación full-stack para la **programación y gestión diaria de servicios de
 
 > **Nota:** Este repositorio es una versión de portafolio. El esquema de base de datos y los datos de ejemplo han sido anonimizados (nombres de clientes, placas, paraderos y credenciales son ficticios). No contiene información real de ninguna empresa.
 
+**Repositorio:** https://github.com/AngelMejiaN/Programacion_Servicios
+
 ---
 
 ## Capturas de pantalla
