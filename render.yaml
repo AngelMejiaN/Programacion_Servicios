@@ -1,0 +1,23 @@
+# Blueprint de Render para el backend (FastAPI) en modo demo.
+# Render lee este archivo automáticamente al crear un "Blueprint" desde el repo.
+services:
+  - type: web
+    name: transitpro-api
+    runtime: python
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r backend/requirements-deploy.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: DEMO_MODE
+        value: "true"
+      # Genera una clave nueva en el dashboard de Render (Generate value).
+      - key: SECRET_KEY
+        generateValue: true
+      # Se rellena con la URL pública del frontend en Vercel tras desplegarlo.
+      # Ej: https://transitpro.vercel.app
+      - key: CORS_ORIGINS
+        sync: false
